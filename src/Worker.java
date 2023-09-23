@@ -11,9 +11,9 @@ public class Worker extends Thread {
     private final String name;
     private final Metrics metrics;
 
-    private transient final Deque<Pod> pods;
+    private final Deque<Pod> pods;
     private final List<Pod> processingPods;
-    private transient final ExecutorService executor;
+    private final ExecutorService executor;
     private boolean stop;
 
     public Worker(String name, Metrics metrics) {
@@ -71,6 +71,14 @@ public class Worker extends Thread {
 
     public Metrics getMetrics() {
         return metrics;
+    }
+
+    public synchronized int getCpu() {
+        return metrics.getCpu();
+    }
+
+    public synchronized int getMemory() {
+        return metrics.getMemory();
     }
 
     public void addPod(Pod pod) {

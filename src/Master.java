@@ -1,6 +1,7 @@
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
+import java.util.TreeSet;
 
 
 public class Master extends Thread {
@@ -48,7 +49,7 @@ public class Master extends Thread {
                     neededWorker = workers.ceiling(neededWorker);
                 }
 
-                if (neededWorker != null) {
+                if (neededWorker != null && verifyWorkersMetrics(neededWorker, pod)) {
                     neededWorker.addPod(pod);
                     synchronized (workers) {
                         workers.remove(neededWorker);
@@ -56,7 +57,7 @@ public class Master extends Thread {
                     }
                 } else {
                     synchronized (pods) {
-                        pods.addFirst(pod);
+                        pods.add(pod);
                     }
                 }
             } else {
@@ -65,6 +66,13 @@ public class Master extends Thread {
                 break;
             }
         }
+    }
+
+    private boolean verifyWorkersMetrics(Worker worker, Pod pod) {
+        int cpu = worker.getCpu();
+        int mem = worker.getMemory();
+
+        return pod.getMetrics().getCpu() <= cpu && pod.getMetrics().getMemory() <= mem;
     }
 
     private void checkWorkers() {
@@ -84,10 +92,6 @@ public class Master extends Thread {
 
     public void addPod(Pod pod) {
         pods.add(pod);
-    }
-
-    public TreeSet<Worker> getWorkers() {
-        return workers;
     }
 
 }
