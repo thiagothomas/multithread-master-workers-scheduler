@@ -15,11 +15,13 @@ public class Generator {
         String name;
         int cpu;
         int memory;
+        int disk;
         for (int i = 1; i <= n; i++) {
             name = "Worker_" + i;
             cpu = random.nextInt(8) + 8;
             memory = random.nextInt(8) + 8;
-            workers.add(new Worker(name, new Metrics(cpu, memory)));
+            disk = random.nextInt(50) + 50  ;
+            workers.add(new Worker(name, new Metrics(cpu, memory, disk)));
         }
 
         return workers;
@@ -33,11 +35,13 @@ public class Generator {
         String name;
         int cpu;
         int memory;
+        int disk;
         for (int i = 1; i <= n; i++) {
             name = "Pod_" + i;
             cpu = random.nextInt(7) + 1;
             memory = random.nextInt(7) + 1;
-            pods.add(new Pod(name, new Metrics(cpu, memory)));
+            disk = random.nextInt(40) + 10;
+            pods.add(new Pod(name, new Metrics(cpu, memory, disk)));
         }
 
         return pods;

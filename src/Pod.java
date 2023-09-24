@@ -1,6 +1,8 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Random;
+
 public class Pod {
 
     private final String name;
@@ -12,8 +14,9 @@ public class Pod {
     }
 
     public void execute() throws InterruptedException {
+        Random random = new Random();
         System.out.println("> POD #" + getName() + " - EXECUTING...\n");
-        Thread.sleep(4000);
+        Thread.sleep(random.nextInt(7000) + 3000);
         System.out.println("> POD #" + getName() + " - FINISHED...\n");
     }
 

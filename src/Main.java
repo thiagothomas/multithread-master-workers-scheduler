@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -21,9 +23,16 @@ public class Main {
         List<Worker> workers = Generator.generateRandomWorkers(nWorkers);
         List<Pod> pods = Generator.generateRandomPods(nPods);
 
-        workers.forEach(master::addWorker);
-        pods.forEach(master::addPod);
+        Monitor monitor = new Monitor();
 
+        int row = 0;
+        for (Worker worker : workers) {
+            monitor.addRow(worker.getWorkerName(), new ArrayList<>(), 0, 0, 0);
+            worker.setRow(row++);
+            worker.setTable(monitor);
+            master.addWorker(worker);
+        }
+        pods.forEach(master::addPod);
         master.start();
     }
 }

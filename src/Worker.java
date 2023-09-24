@@ -2,6 +2,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,15 +11,23 @@ public class Worker extends Thread {
 
     private final String name;
     private final Metrics metrics;
+    private final int initialCpu;
+    private final int initialMemory;
+    private final int initialDisk;
 
     private final Deque<Pod> pods;
     private final List<Pod> processingPods;
     private final ExecutorService executor;
     private boolean stop;
+    private int row;
+    private Monitor table;
 
     public Worker(String name, Metrics metrics) {
         this.name = name;
         this.metrics = metrics;
+        this.initialCpu = metrics.getCpu();
+        this.initialMemory = metrics.getMemory();
+        this.initialDisk = metrics.getDisk();
         this.pods = new ArrayDeque<>();
         executor = Executors.newThreadPerTaskExecutor(Executors.defaultThreadFactory());
         processingPods = new ArrayList<>();
@@ -55,11 +64,16 @@ public class Worker extends Thread {
                 synchronized (this) {
                     this.metrics.setCpu(this.metrics.getCpu() + finalPod.getMetrics().getCpu());
                     this.metrics.setMemory(this.metrics.getMemory() + finalPod.getMetrics().getMemory());
+                    this.metrics.setDisk(this.metrics.getDisk() + finalPod.getMetrics().getDisk());
                     String str = ">>> Worker #" + getWorkerName() + " finished working on POD #" + finalPod.getName() + "\n" +
                             ">>> Worker #" + getWorkerName() + " updated Metrics - " + metrics + "\n";
                     System.out.println(str);
                     FinishedWorkersUtil.add(this);
                     processingPods.remove(finalPod);
+                    table.setValueAt(((initialCpu - this.metrics.getCpu()) * 100) / initialCpu, row, TableUtil.CPU_COLUMN);
+                    table.setValueAt(((initialMemory - this.metrics.getMemory()) * 100) / initialMemory, row, TableUtil.MEMORY_COLUMN);
+                    table.setValueAt(((initialDisk - this.metrics.getDisk()) * 100) / initialDisk, row, TableUtil.DISK_COLUMN);
+                    table.setValueAt(getPodsNames(), row, TableUtil.PODS_COLUMN);
                 }
             }
         });
@@ -69,7 +83,7 @@ public class Worker extends Thread {
         this.stop = true;
     }
 
-    public Metrics getMetrics() {
+    public synchronized Metrics getMetrics() {
         return metrics;
     }
 
@@ -81,23 +95,55 @@ public class Worker extends Thread {
         return metrics.getMemory();
     }
 
-    public void addPod(Pod pod) {
-        synchronized (this) {
-            int newCpu = this.metrics.getCpu() - pod.getMetrics().getCpu();
-            int newMemory = this.metrics.getMemory() - pod.getMetrics().getMemory();
-            this.metrics.setCpu(newCpu);
-            this.metrics.setMemory(newMemory);
+    public synchronized int getDisk() {
+        return metrics.getDisk();
+    }
 
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(String.format(">>>>>>>>>>>>>>>>> SCHEDULING POD %s to WORKER %S <<<<<<<<<<<<<<<<<\n", pod.getName(), this.getWorkerName()));
-            stringBuilder.append(">>> Worker #").append(getWorkerName()).append(" updated Metrics - ").append(metrics).append("\n");
-            System.out.println(stringBuilder);
-            this.pods.add(pod);
-        }
+    public synchronized void addPod(Pod pod) {
+        int newCpu = this.metrics.getCpu() - pod.getMetrics().getCpu();
+        int newMemory = this.metrics.getMemory() - pod.getMetrics().getMemory();
+        int newDisk = this.metrics.getDisk() - pod.getMetrics().getDisk();
+        this.metrics.setCpu(newCpu);
+        this.metrics.setMemory(newMemory);
+        this.metrics.setDisk(newDisk);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(String.format(">>>>>>>>>>>>>>>>> SCHEDULING POD %s to WORKER %S <<<<<<<<<<<<<<<<<\n", pod.getName(), this.getWorkerName()));
+        stringBuilder.append(">>> Worker #").append(getWorkerName()).append(" updated Metrics - ").append(metrics).append("\n");
+        System.out.println(stringBuilder);
+        this.pods.add(pod);
+        table.setValueAt(((initialCpu - this.metrics.getCpu()) * 100) / initialCpu, row, TableUtil.CPU_COLUMN);
+        table.setValueAt(((initialMemory - this.metrics.getMemory()) * 100) / initialMemory, row, TableUtil.MEMORY_COLUMN);
+        table.setValueAt(((initialDisk - this.metrics.getDisk()) * 100) / initialDisk, row, TableUtil.DISK_COLUMN);
+        table.setValueAt(getPodsNames(), row, TableUtil.PODS_COLUMN);
     }
 
     public String getWorkerName() {
         return name;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
+
+    public void setTable(Monitor table) {
+        this.table = table;
+    }
+
+    private List<String> getPodsNames() {
+        Set<String> names = new HashSet<>();
+        getPods().forEach(pod -> names.add(pod.getName()));
+        getProcessingPods().forEach(pod -> names.add(pod.getName()));
+
+        return names.stream().toList();
+    }
+
+    public synchronized Deque<Pod> getPods() {
+        return pods;
+    }
+
+    public synchronized List<Pod> getProcessingPods() {
+        return processingPods;
     }
 
     @Override

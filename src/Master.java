@@ -1,7 +1,4 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Objects;
-import java.util.TreeSet;
+import java.util.*;
 
 
 public class Master extends Thread {
@@ -15,8 +12,10 @@ public class Master extends Thread {
             Metrics m2 = w2.getMetrics();
             if (!Objects.equals(m1.getCpu(), m2.getCpu())) {
                 return m1.getCpu() - m2.getCpu();
-            } else {
+            } else if (!Objects.equals(m1.getMemory(), m2.getMemory())){
                 return m1.getMemory() - m2.getMemory();
+            } else {
+                return m1.getDisk() - m2.getDisk();
             }
         });
         pods = new ArrayDeque<>();
@@ -43,7 +42,7 @@ public class Master extends Thread {
             }
 
             if (pod != null) {
-                Worker neededWorker = new Worker("", new Metrics(pod.getMetrics().getCpu(), pod.getMetrics().getMemory()));
+                Worker neededWorker = new Worker("", new Metrics(pod.getMetrics().getCpu(), pod.getMetrics().getMemory(), pod.getMetrics().getDisk()));
 
                 synchronized (workers) {
                     neededWorker = workers.ceiling(neededWorker);
@@ -71,8 +70,9 @@ public class Master extends Thread {
     private boolean verifyWorkersMetrics(Worker worker, Pod pod) {
         int cpu = worker.getCpu();
         int mem = worker.getMemory();
+        int disk = worker.getDisk();
 
-        return pod.getMetrics().getCpu() <= cpu && pod.getMetrics().getMemory() <= mem;
+        return pod.getMetrics().getCpu() <= cpu && pod.getMetrics().getMemory() <= mem && pod.getMetrics().getDisk() <= disk;
     }
 
     private void checkWorkers() {
