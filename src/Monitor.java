@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
@@ -12,6 +13,7 @@ public class Monitor {
 
     public Monitor() {
         UIManager.put("Table.font", new Font("Courier", Font.PLAIN,14));
+        UIManager.put("Table.cellRenderer", "centeredTextRenderer");
         mainFrame = new JFrame("Workers Monitor");
         mainFrame.setSize(800, 400);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -37,6 +39,11 @@ public class Monitor {
         workersTable.getColumnModel().getColumn(3).setCellRenderer(new ProgressBarRenderer());
         workersTable.getColumnModel().getColumn(4).setCellRenderer(new ProgressBarRenderer());
         workersTable.setRowHeight(40);
+
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        workersTable.setDefaultRenderer(Object.class, centerRenderer);
+
         JTableHeader header = workersTable.getTableHeader();
         header.setFont(new Font("Courier", Font.BOLD,16));
         header.setPreferredSize(new Dimension(header.getWidth(), 40)); // Adjust the height of column headers
