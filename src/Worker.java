@@ -130,7 +130,7 @@ public class Worker extends Thread {
         this.table = table;
     }
 
-    private List<String> getPodsNames() {
+    private synchronized List<String> getPodsNames() {
         Set<String> names = new HashSet<>();
         getPods().forEach(pod -> names.add(pod.getName()));
         getProcessingPods().forEach(pod -> names.add(pod.getName()));

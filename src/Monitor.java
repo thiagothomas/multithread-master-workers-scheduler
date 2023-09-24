@@ -12,10 +12,10 @@ public class Monitor {
     private DefaultTableModel tableModel;
 
     public Monitor() {
-        UIManager.put("Table.font", new Font("Courier", Font.PLAIN,14));
+        UIManager.put("Table.font", new Font("Arial", Font.PLAIN,14));
         UIManager.put("Table.cellRenderer", "centeredTextRenderer");
         mainFrame = new JFrame("Workers Monitor");
-        mainFrame.setSize(800, 400);
+        mainFrame.setSize(1000, 400);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         String[] columnNames = {"Worker Name", "Pods", "CPU", "Memory", "Disk"};
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -45,7 +45,7 @@ public class Monitor {
         workersTable.setDefaultRenderer(Object.class, centerRenderer);
 
         JTableHeader header = workersTable.getTableHeader();
-        header.setFont(new Font("Courier", Font.BOLD,16));
+        header.setFont(new Font("Arial", Font.BOLD,16));
         header.setPreferredSize(new Dimension(header.getWidth(), 40)); // Adjust the height of column headers
 
         mainFrame.add(new JScrollPane(workersTable));
@@ -76,7 +76,9 @@ public class Monitor {
                 setValue((Integer) value);
                 setString(getValue() + "%");
             }
-            this.setFont(new Font("Courier", Font.BOLD,14));
+            setForeground(Color.BLUE);
+            setBackground(Color.LIGHT_GRAY);
+            this.setFont(new Font("Arial", Font.BOLD,16));
             return this;
         }
     }
