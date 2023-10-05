@@ -5,6 +5,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Monitor {
     private static JFrame mainFrame;
@@ -59,6 +60,18 @@ public class Monitor {
 
     public static void setValueAt(Object value, int row, int column) {
         workersTable.setValueAt(value, row, column);
+    }
+
+    public static void addPod(Object value, int row) {
+        List<String> valueAt = (List<String>)workersTable.getValueAt(row, TableUtil.PODS_COLUMN);
+        valueAt.add((String)value);
+        workersTable.setValueAt(valueAt, row, TableUtil.PODS_COLUMN);
+    }
+
+    public static void removePod(Object value, int row) {
+        List<String> valueAt = (List<String>)workersTable.getValueAt(row, TableUtil.PODS_COLUMN);
+        valueAt.remove((String)value);
+        workersTable.setValueAt(valueAt, row, TableUtil.PODS_COLUMN);
     }
 
     private static class ProgressBarRenderer extends JProgressBar implements TableCellRenderer {

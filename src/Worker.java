@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,8 +16,8 @@ public class Worker extends Thread {
     private final int initialMemory;
     private final int initialDisk;
 
-    private final Deque<Pod> pods;
-    private final List<Pod> processingPods;
+    private final ConcurrentLinkedDeque<Pod> pods;
+    private final ConcurrentLinkedDeque<Pod> processingPods;
     private final ExecutorService executor;
     private boolean stop;
     private int row;
@@ -27,9 +28,9 @@ public class Worker extends Thread {
         this.initialCpu = metrics.getCpu();
         this.initialMemory = metrics.getMemory();
         this.initialDisk = metrics.getDisk();
-        this.pods = new ArrayDeque<>();
+        this.pods = new ConcurrentLinkedDeque<>();
         executor = Executors.newThreadPerTaskExecutor(Executors.defaultThreadFactory());
-        processingPods = new ArrayList<>();
+        processingPods = new ConcurrentLinkedDeque<>();
         this.stop = false;
     }
 
@@ -45,8 +46,10 @@ public class Worker extends Thread {
             }
 
             if (pod != null) {
-//                System.out.println(">>> Worker #" + getWorkerName() + " is working on POD #" + pod.getName() + "\n");
-                processingPods.add(pod);
+                //                System.out.println(">>> Worker #" + getWorkerName() + " is working on POD #" + pod.getName() + "\n");
+                synchronized (processingPods) {
+                    processingPods.add(pod);
+                }
                 executePod(pod);
             }
         }
@@ -63,15 +66,12 @@ public class Worker extends Thread {
                     this.metrics.setCpu(this.metrics.getCpu() + finalPod.getMetrics().getCpu());
                     this.metrics.setMemory(this.metrics.getMemory() + finalPod.getMetrics().getMemory());
                     this.metrics.setDisk(this.metrics.getDisk() + finalPod.getMetrics().getDisk());
-//                    String str = ">>> Worker #" + getWorkerName() + " finished working on POD #" + finalPod.getName() + "\n" +
-//                            ">>> Worker #" + getWorkerName() + " updated Metrics - " + metrics + "\n";
-//                    System.out.println(str);
                     FinishedWorkersUtil.add(this);
                     processingPods.remove(finalPod);
                     Monitor.setValueAt(((initialCpu - this.metrics.getCpu()) * 100) / initialCpu, row, TableUtil.CPU_COLUMN);
                     Monitor.setValueAt(((initialMemory - this.metrics.getMemory()) * 100) / initialMemory, row, TableUtil.MEMORY_COLUMN);
                     Monitor.setValueAt(((initialDisk - this.metrics.getDisk()) * 100) / initialDisk, row, TableUtil.DISK_COLUMN);
-                    Monitor.setValueAt(getPodsNames(), row, TableUtil.PODS_COLUMN);
+                    Monitor.removePod(finalPod.getName(), row);
                 }
             }
         });
@@ -113,7 +113,7 @@ public class Worker extends Thread {
         Monitor.setValueAt(((initialCpu - this.metrics.getCpu()) * 100) / initialCpu, row, TableUtil.CPU_COLUMN);
         Monitor.setValueAt(((initialMemory - this.metrics.getMemory()) * 100) / initialMemory, row, TableUtil.MEMORY_COLUMN);
         Monitor.setValueAt(((initialDisk - this.metrics.getDisk()) * 100) / initialDisk, row, TableUtil.DISK_COLUMN);
-        Monitor.setValueAt(getPodsNames(), row, TableUtil.PODS_COLUMN);
+        Monitor.addPod(pod.getName(), row);
     }
 
     public String getWorkerName() {
@@ -122,35 +122,6 @@ public class Worker extends Thread {
 
     public void setRow(int row) {
         this.row = row;
-    }
-
-    private synchronized List<String> getPodsNames ()
-    {
-
-        Set<String> names = new HashSet<>();
-        Deque<Pod> _pods = getPods();
-        List<Pod> _processingPods = getProcessingPods();
-        _pods.forEach(pod -> {
-            if (pod != null) {
-                names.add(pod.getName());
-            }
-        });
-        _processingPods.forEach(pod -> {
-            if (pod != null) {
-                names.add(pod.getName());
-            }
-        });
-
-        return names.stream().toList();
-
-    }
-
-    public Deque<Pod> getPods() {
-        return pods;
-    }
-
-    public List<Pod> getProcessingPods() {
-        return processingPods;
     }
 
     @Override
