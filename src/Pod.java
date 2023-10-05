@@ -15,9 +15,9 @@ public class Pod {
 
     public void execute() throws InterruptedException {
         Random random = new Random();
-        System.out.println("> POD #" + getName() + " - EXECUTING...\n");
+//        System.out.println("> POD #" + getName() + " - EXECUTING...\n");
         Thread.sleep(random.nextInt(7000) + 3000);
-        System.out.println("> POD #" + getName() + " - FINISHED...\n");
+//        System.out.println("> POD #" + getName() + " - FINISHED...\n");
     }
 
     public Metrics getMetrics() {
@@ -32,24 +32,6 @@ public class Pod {
         stringBuilder.append(gson.toJson(this));
         stringBuilder.append("\n------------------------------------------------");
         return stringBuilder.toString();
-    }
-
-    private void printInicioExecucao() {
-        StringBuilder stringBuilder = new StringBuilder("--------------------- POD ----------------------\n");
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        stringBuilder.append(gson.toJson(this));
-        stringBuilder.append("\n------------------- EXECUTING ------------------");
-        System.out.println(stringBuilder);
-    }
-
-    private void printFimExecucao() {
-        StringBuilder stringBuilder = new StringBuilder("--------------------- POD ----------------------\n");
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
-        stringBuilder.append(gson.toJson(this));
-        stringBuilder.append("\n------------------- FINISHED -------------------");
-        System.out.println(stringBuilder);
     }
 
     public String getName() {

@@ -27,9 +27,8 @@ public class Main {
 
         int row = 0;
         for (Worker worker : workers) {
-            monitor.addRow(worker.getWorkerName(), new ArrayList<>(), 0, 0, 0);
+            Monitor.addRow(worker.getWorkerName(), new ArrayList<>(), 0, 0, 0);
             worker.setRow(row++);
-            worker.setTable(monitor);
             master.addWorker(worker);
         }
         pods.forEach(master::addPod);

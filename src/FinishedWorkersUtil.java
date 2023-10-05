@@ -15,10 +15,6 @@ public class FinishedWorkersUtil {
         finishedWorkers.add(worker);
     }
 
-    public static synchronized void remove(Worker worker) {
-        finishedWorkers.remove(worker);
-    }
-
     public static synchronized boolean isEmpty() {
         return finishedWorkers.isEmpty();
     }

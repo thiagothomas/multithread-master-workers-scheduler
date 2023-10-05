@@ -7,9 +7,9 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Monitor {
-    private JFrame mainFrame;
-    private JTable workersTable;
-    private DefaultTableModel tableModel;
+    private static JFrame mainFrame;
+    private static JTable workersTable;
+    private static DefaultTableModel tableModel;
 
     public Monitor() {
         UIManager.put("Table.font", new Font("Arial", Font.PLAIN,14));
@@ -46,21 +46,18 @@ public class Monitor {
 
         JTableHeader header = workersTable.getTableHeader();
         header.setFont(new Font("Arial", Font.BOLD,16));
-        header.setPreferredSize(new Dimension(header.getWidth(), 40)); // Adjust the height of column headers
+        header.setPreferredSize(new Dimension(header.getWidth(), 40));
+        header.setDefaultRenderer(centerRenderer);
 
         mainFrame.add(new JScrollPane(workersTable));
         mainFrame.setVisible(true);
     }
 
-    public synchronized void addRow(String name, ArrayList<String> pods, int cpuPercent, int memPercent, int banPercent) {
-        tableModel.addRow(new Object[]{name, pods, cpuPercent, memPercent, banPercent});
+    public static void addRow(String name, ArrayList<String> pods, int cpuPercent, int memPercent, int disk) {
+        tableModel.addRow(new Object[]{name, pods, cpuPercent, memPercent, disk});
     }
 
-    public JTable getWorkersTable() {
-        return workersTable;
-    }
-
-    public synchronized void setValueAt(Object value, int row, int column) {
+    public static void setValueAt(Object value, int row, int column) {
         workersTable.setValueAt(value, row, column);
     }
 
