@@ -12,11 +12,11 @@ public class Monitor {
     private static JTable workersTable;
     private static DefaultTableModel tableModel;
 
-    public Monitor() {
+    public static void initiate() {
         UIManager.put("Table.font", new Font("Arial", Font.PLAIN,14));
         UIManager.put("Table.cellRenderer", "centeredTextRenderer");
         mainFrame = new JFrame("Workers Monitor");
-        mainFrame.setSize(1000, 400);
+        mainFrame.setSize(1000, 700);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         String[] columnNames = {"Worker Name", "Pods", "CPU", "Memory", "Disk"};
         tableModel = new DefaultTableModel(columnNames, 0) {

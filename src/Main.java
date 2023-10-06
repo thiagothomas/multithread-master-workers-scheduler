@@ -23,7 +23,7 @@ public class Main {
         List<Worker> workers = Generator.generateRandomWorkers(nWorkers);
         List<Pod> pods = Generator.generateRandomPods(nPods);
 
-        Monitor monitor = new Monitor();
+        Monitor.initiate();
 
         int row = 0;
         for (Worker worker : workers) {
